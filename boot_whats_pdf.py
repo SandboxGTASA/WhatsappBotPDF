@@ -14,7 +14,7 @@ import os.path
 from grava_status import grava_status
 
 
-
+################### LOG para capturar erro no envio #######################
 logging.basicConfig(filename='boot_whatsapp.log', level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(funcName)s => %(message)s')
 
@@ -50,7 +50,11 @@ def env_mensagem(texto):
     send.click()
 
 def env_boleto_massa(nome_cliente):
-        if os.path.exists(f"boletos/{nome_cliente}.pdf"):
+    ################### Caminho para pasta que utilizaremos #######################
+    diretorio = r'C:\Users\helpdesk\Desktop\BOOT_BOLETOS\boletos'
+
+
+        if os.path.exists(f"{diretorio}/{nome_cliente}.pdf"):
             # Pesquisa destino em caixa de pesquisa
             caixa = web_driver.find_element_by_xpath("//*[@id='side']/div/div/label/div/div[2]")
             caixa.click()
@@ -74,10 +78,10 @@ def env_boleto_massa(nome_cliente):
             button[0].click()
             time.sleep(10)   # segundo. Esta pausa é necessária
             #Abre diretório de boletos
-            abre_arquivo(r'C:\Users\helpdesk\Desktop\BOOT_BOLETOS\boletos')
+            abre_arquivo(diretorio)
             time.sleep(1)
             #Abre diretório de boletos (inserido caso o primeiro envio da função não execute)
-            abre_arquivo(r'C:\Users\helpdesk\Desktop\BOOT_BOLETOS\boletos')
+            abre_arquivo(diretorio)
             #Abre Arquivo nome do cliente . pdf
             abre_arquivo(f'{nome_cliente}.pdf')
             time.sleep(7)
@@ -95,8 +99,9 @@ def env_boleto_massa(nome_cliente):
 
     
 
-# Lista que contém os contatos/nome do arquivo a serem enviados.
-lista_cli = ['CAMP','AxYP[GS_','123456789654321654','CAMP']
+# Arquivo que contém os contatos/nome do arquivo a serem enviados.
+clientes = pd.read_csv('CLIENTES.csv',sep = ';', encoding='ISO-8859-1', header=None)
+
 # Usando o ChromeDriver webdriver 87.x
 web_driver = webdriver.Chrome(executable_path=r"C:\Users\helpdesk\Desktop\BOOT_BOLETOS\chromedriver.exe")
 
@@ -105,7 +110,7 @@ web_driver.get("http://web.whatsapp.com")
 web_driver.implicitly_wait(100)   # Segundos (implicitly_wait aguarda até que uma requisição seja feita ou os 100 segundos passem)
 
 #Looping para envio conforme a quantidade de clientes
-for cliente in lista_cli:
+for cliente in clientes[0]:
     try:
         env_boleto_massa(cliente)
         logging.debug('paramethers: cliente = {} - OK'.format(cliente))
@@ -119,7 +124,7 @@ for cliente in lista_cli:
         caixa = web_driver.find_element_by_xpath("//*[@id='side']/div/div/label/div/div[2]")
         caixa.clear()
     except:
-        grava_status(cliente,'CLIENTE NAO LOCALIZADO')
+        grava_status(cliente,'ERRO DESCONHECIDO')
         logging.exception('paramethers: cliente = {} - ERRO DESCONHECIDO'.format(cliente))
 
 
